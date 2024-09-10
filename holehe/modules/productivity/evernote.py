@@ -6,7 +6,7 @@ async def evernote(email, client, out):
     name = "evernote"
     domain = "evernote.com"
     method = "login"
-    frequent_rate_limit=False
+    frequent_rate_limit = False
 
     headers = {
         'User-Agent': random.choice(ua["browsers"]["firefox"]),
@@ -20,39 +20,39 @@ async def evernote(email, client, out):
         'Referer': 'https://www.evernote.com/Login.action',
         'TE': 'Trailers',
     }
-    data = await client.get("https://www.evernote.com/Login.action", headers=headers)
-    data2 = {
-        'username': email, 'evaluateUsername': '',
-        'hpts': data.text.split('document.getElementById("hpts").value = "')
-        [1].split('"')[0],
-        'hptsh': data.text.split('document.getElementById("hptsh").value = "')
-        [1].split('"')[0],
-        'analyticsLoginOrigin': 'login_action', 'clipperFlow': 'false',
-        'showSwitchService': 'true', 'usernameImmutable': 'false',
-        '_sourcePage': data.text.split(
-            '<input type="hidden" name="_sourcePage" value="')[1].split('"')
-        [0],
-        '__fp': data.text.split('<input type="hidden" name="__fp" value="')
-        [1].split('"')[0]}
-    response = await client.post('https://www.evernote.com/Login.action', data=data2, headers=headers)
+    try:
+        page = await client.get("https://www.evernote.com/Login.action", headers=headers)
+        hpts = re.search(r'document.getElementById\("hpts"\)\.value = "([^"]+)"', page.text)
+        hptsh = re.search(r'document.getElementById\("hptsh"\)\.value = "([^"]+)"', page.text)
+        source_page = re.search(r'<input type="hidden" name="_sourcePage" value="([^"]+)"', page.text)
+        fp = re.search(r'<input type="hidden" name="__fp" value="([^"]+)"', page.text)
+        if None in (hpts, hptsh, source_page, fp):
+            raise ValueError('evernote login fields missing')
+
+        data2 = {
+            'username': email,
+            'evaluateUsername': '',
+            'hpts': hpts.group(1),
+            'hptsh': hptsh.group(1),
+            'analyticsLoginOrigin': 'login_action',
+            'clipperFlow': 'false',
+            'showSwitchService': 'true',
+            'usernameImmutable': 'false',
+            '_sourcePage': source_page.group(1),
+            '__fp': fp.group(1),
+        }
+        response = await client.post('https://www.evernote.com/Login.action', data=data2, headers=headers)
+    except Exception:
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
+        return
+
     if "usePasswordAuth" in response.text:
-        out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
-                    "rateLimit": False,
-                    "exists": True,
-                    "emailrecovery": None,
-                    "phoneNumber": None,
-                    "others": None})
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": False, "exists": True, "emailrecovery": None, "phoneNumber": None, "others": None})
     elif "displayMessage" in response.text:
-        out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
-                    "rateLimit": False,
-                    "exists": False,
-                    "emailrecovery": None,
-                    "phoneNumber": None,
-                    "others": None})
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": False, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
     else:
-        out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
-                    "rateLimit": True,
-                    "exists": False,
-                    "emailrecovery": None,
-                    "phoneNumber": None,
-                    "others": None})
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
