@@ -210,7 +210,7 @@ async def maincore():
     # Start time
     start_time = time.time()
     # Def the async client
-    client = httpx.AsyncClient(timeout=timeout)
+    client = httpx.AsyncClient(timeout=timeout, follow_redirects=True)
     # Launching the modules
     out = []
     instrument = TrioProgress(len(websites))

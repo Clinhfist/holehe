@@ -93,7 +93,10 @@ async def main():
     functions = get_module_functions(modules)
     print(f"Знайдено {len(functions)} модулів.\n")
 
-    async with httpx.AsyncClient(timeout=15) as client:
+    # follow_redirects=True — критично: без цього github/snapchat/samsung/
+    # evernote/soundcloud (і, ймовірно, інші) отримують 30x-редирект з
+    # порожнім тілом на першому ж запиті й ніколи не бачать реальну сторінку.
+    async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
         # Обмежуємо паралелізм, щоб не влетіти в масовий rate-limit одразу по всіх сайтах
         semaphore = asyncio.Semaphore(10)
 
