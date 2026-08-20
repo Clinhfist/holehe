@@ -10,12 +10,35 @@ async def snapchat(email, client, out):
 
     try:
         req = await client.get("https://accounts.snapchat.com")
-        xsrf_match = re.search(r'data-xsrf="([^"]+)"', req.text)
-        web_client_match = re.search(r'data-web-client-id="([^"]+)"', req.text)
-        if xsrf_match is None or web_client_match is None:
+        text = req.text or ""
+
+        # Try multiple patterns for xsrf and client id
+        xsrf = None
+        webClientId = None
+        for pattern in [r'data-xsrf="([^"]+)"', r'data-xsrf-token="([^"]+)"', r'XSRF-TOKEN=([^;\s]+)']:
+            m = re.search(pattern, text)
+            if m:
+                xsrf = m.group(1)
+                break
+
+        for pattern in [r'data-web-client-id="([^"]+)"', r'web_client_id=([^;\s]+)']:
+            m = re.search(pattern, text)
+            if m:
+                webClientId = m.group(1)
+                break
+
+        if not xsrf:
+            # also try cookies set in response
+            xsrf = req.headers.get("set-cookie")
+            if xsrf:
+                m = re.search(r'xsrf_token=([^;\s]+)', xsrf)
+                if m:
+                    xsrf = m.group(1)
+                else:
+                    xsrf = None
+
+        if not xsrf or not webClientId:
             raise ValueError('snapchat page changed')
-        xsrf = xsrf_match.group(1)
-        webClientId = web_client_match.group(1)
 
         url = "https://accounts.snapchat.com/accounts/merlin/login"
         headers = {
@@ -23,10 +46,10 @@ async def snapchat(email, client, out):
             "User-Agent": random.choice(ua["browsers"]["firefox"]),
             "Accept": "*/*",
             "X-XSRF-TOKEN": xsrf,
-            "Accept-Encoding": "gzip, late",
+            "Accept-Encoding": "gzip, deflate",
             "Content-Type": "application/json",
             "Connection": "close",
-            "Cookie": "xsrf_token=" + xsrf + "; web_client_id=" + webClientId
+            "Cookie": f"xsrf_token={xsrf}; web_client_id={webClientId}"
         }
         payload = {"email": email, "app": "BITMOJI_APP"}
         response = await client.post(url, json=payload, headers=headers)

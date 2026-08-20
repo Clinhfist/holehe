@@ -49,37 +49,6 @@ async def facebook(email, client, out):
             data=data,
             headers=headers)
         check = check.json()
-
-        if check["status"] != "fail":
-            if 'email' in check["errors"].keys():
-                if check["errors"]["email"][0]["code"] == "email_is_taken":
-                    out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
-                                "rateLimit": False,
-                                "exists": True,
-                                "emailrecovery": None,
-                                "phoneNumber": None,
-                                "others": None})
-                elif "email_sharing_limit" in str(check["errors"]):
-                    out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
-                                "rateLimit": False,
-                                "exists": True,
-                                "emailrecovery": None,
-                                "phoneNumber": None,
-                                "others": None})
-            else:
-                out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
-                            "rateLimit": False,
-                            "exists": False,
-                            "emailrecovery": None,
-                            "phoneNumber": None,
-                            "others": None})
-        else:
-            out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
-                        "rateLimit": True,
-                        "exists": False,
-                        "emailrecovery": None,
-                        "phoneNumber": None,
-                        "others": None})
     except Exception as e:
         print(f"Error occurred during POST request: {e}")
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
@@ -88,3 +57,47 @@ async def facebook(email, client, out):
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})
+        return
+
+    # Normalize errors and detect common shapes
+    errors = check.get("errors") or {}
+
+    def _email_taken(email_err):
+        if isinstance(email_err, list) and email_err:
+            first = email_err[0]
+            if isinstance(first, dict) and first.get("code") == "email_is_taken":
+                return True
+        if isinstance(email_err, dict):
+            errs = email_err.get("_errors") or email_err.get("errors") or []
+            if isinstance(errs, list) and errs:
+                first = errs[0]
+                if isinstance(first, dict) and first.get("code") == "email_is_taken":
+                    return True
+        if "email_is_taken" in str(email_err) or "email_sharing_limit" in str(email_err):
+            return True
+        return False
+
+    if errors:
+        email_err = errors.get("email")
+        if email_err and _email_taken(email_err):
+            out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                        "rateLimit": False,
+                        "exists": True,
+                        "emailrecovery": None,
+                        "phoneNumber": None,
+                        "others": None})
+        else:
+            out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                        "rateLimit": False,
+                        "exists": False,
+                        "emailrecovery": None,
+                        "phoneNumber": None,
+                        "others": None})
+    else:
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": False,
+                    "exists": False,
+                    "emailrecovery": None,
+                    "phoneNumber": None,
+                    "others": None})
+    # end

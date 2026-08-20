@@ -13,7 +13,19 @@ async def pinterest(email, client, out):
             "https://www.pinterest.com/_ngjs/resource/EmailExistsResource/get/",
             params={
                 "source_url": "/",
-                "data": '{"options": {"email": "' + email + '"}, "context": {}}'})
+                "data": '{"options": {"email": "' + email + '"}, "context": {}}'},
+            headers={"User-Agent": random.choice(ua["browsers"]["chrome"])})
+    except Exception:
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
+        return
+
+    if req.status_code == 403:
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
+        return
+
+    try:
         payload = req.json()
     except Exception:
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,

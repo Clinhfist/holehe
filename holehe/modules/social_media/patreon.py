@@ -27,24 +27,53 @@ async def patreon(email, client, out):
     data = '{"data":{"attributes":{"email":"'+email+'"},"relationships":{}}}'
     try:
         response = await client.post('https://www.patreon.com/api/email/available', headers=headers, params=params, data=data)
-        if response.json()["data"]["is_available"] == True :
-            out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
+    except Exception:
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True,
+                    "exists": False,
+                    "emailrecovery": None,
+                    "phoneNumber": None,
+                    "others": None})
+        return
+
+    if response.status_code == 404:
+        # Endpoint removed/changed — mark as rate limited/unknown
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True,
+                    "exists": False,
+                    "emailrecovery": None,
+                    "phoneNumber": None,
+                    "others": None})
+        return
+
+    try:
+        j = response.json()
+        is_avail = j.get("data", {}).get("is_available")
+        if is_avail is True:
+            out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                         "rateLimit": False,
                         "exists": False,
                         "emailrecovery": None,
                         "phoneNumber": None,
                         "others": None})
-        else:
-            out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
+        elif is_avail is False:
+            out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                         "rateLimit": False,
                         "exists": True,
                         "emailrecovery": None,
                         "phoneNumber": None,
                         "others": None})
-    except Exception:
-            out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
+        else:
+            out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                         "rateLimit": True,
                         "exists": False,
                         "emailrecovery": None,
                         "phoneNumber": None,
                         "others": None})
+    except Exception:
+        out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
+                    "rateLimit": True,
+                    "exists": False,
+                    "emailrecovery": None,
+                    "phoneNumber": None,
+                    "others": None})
