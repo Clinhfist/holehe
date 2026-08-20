@@ -31,7 +31,7 @@ async def discord(email, client, out):
         "password": get_random_string(20),
         "invite": None,
         "consent": True,
-        "date_of_birth": "",
+        "date_of_birth": "2000-01-01",
         "gift_code_sku_id": None,
         "captcha_key": None,
     }
