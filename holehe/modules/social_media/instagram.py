@@ -47,7 +47,7 @@ async def instagram(email, client, out):
     except Exception:
         out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})
@@ -69,7 +69,7 @@ async def instagram(email, client, out):
     except Exception:
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})

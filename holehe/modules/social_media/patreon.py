@@ -30,7 +30,7 @@ async def patreon(email, client, out):
     except Exception:
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})
@@ -40,7 +40,7 @@ async def patreon(email, client, out):
         # Endpoint removed/changed — mark as rate limited/unknown
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})
@@ -66,14 +66,14 @@ async def patreon(email, client, out):
         else:
             out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                         "rateLimit": True,
-                        "exists": False,
+                        "exists": None,
                         "emailrecovery": None,
                         "phoneNumber": None,
                         "others": None})
     except Exception:
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})

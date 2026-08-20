@@ -120,19 +120,23 @@ def print_result(data,args,email,start_time,websites):
     print("*" * (len(email) + 6))
 
     for results in data:
-        if results["rateLimit"] and args.onlyused == False:
-            websiteprint = print_color("[x] " + results["domain"], "yellow",args)
+        exists = results.get("exists")
+        if results.get("rateLimit") and args.onlyused == False:
+            if exists is None:
+                websiteprint = print_color("[?] " + results["domain"] + " (unknown / service unavailable)", "yellow", args)
+            else:
+                websiteprint = print_color("[x] " + results["domain"], "yellow", args)
             print(websiteprint)
         elif "error" in results.keys() and results["error"] and args.onlyused == False:
             toprint = ""
             if results["others"] is not None and "Message" in str(results["others"].keys()):
                 toprint = " Error message: " + results["others"]["errorMessage"]
             websiteprint = print_color("[!] " + results["domain"] + toprint, "red",args)
-            print(websiteprint) 
-        elif results["exists"] == False and args.onlyused == False:
+            print(websiteprint)
+        elif exists is False and args.onlyused == False:
             websiteprint = print_color("[-] " + results["domain"], "magenta",args)
             print(websiteprint)
-        elif results["exists"] == True:
+        elif exists is True:
             toprint = ""
             if results["emailrecovery"] is not None:
                 toprint += " " + results["emailrecovery"]

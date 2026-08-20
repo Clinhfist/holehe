@@ -29,7 +29,7 @@ async def facebook(email, client, out):
         print(f"Error occurred while fetching CSRF token: {e}")
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})
@@ -53,7 +53,7 @@ async def facebook(email, client, out):
         print(f"Error occurred during POST request: {e}")
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
                     "rateLimit": True,
-                    "exists": False,
+                    "exists": None,
                     "emailrecovery": None,
                     "phoneNumber": None,
                     "others": None})

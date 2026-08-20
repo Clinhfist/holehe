@@ -55,7 +55,7 @@ async def snapchat(email, client, out):
         response = await client.post(url, json=payload, headers=headers)
     except Exception:
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
-                    "rateLimit": True, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
+                    "rateLimit": True, "exists": None, "emailrecovery": None, "phoneNumber": None, "others": None})
         return
 
     try:
@@ -68,4 +68,4 @@ async def snapchat(email, client, out):
                     "rateLimit": False, "exists": bool(data.get("hasSnapchat", False)), "emailrecovery": None, "phoneNumber": None, "others": None})
     except Exception:
         out.append({"name": name, "domain": domain, "method": method, "frequent_rate_limit": frequent_rate_limit,
-                    "rateLimit": True, "exists": False, "emailrecovery": None, "phoneNumber": None, "others": None})
+                    "rateLimit": True, "exists": None, "emailrecovery": None, "phoneNumber": None, "others": None})
